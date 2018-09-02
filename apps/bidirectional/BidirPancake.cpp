@@ -653,17 +653,17 @@ void TestVariants()
 	cout << "HEUR:GAP\\2\n";
 	Solve(&pancake2, "/Users/nathanst/bidir/pancake/p11_G2-E");
 	cout << "HEUR:GAP-1\n";
-	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	Solve(&o1, "/Users/nathanst/bidir/pancake/p11_G2-E");
 	cout << "HEUR:GAP-2\n";
-	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	Solve(&o2, "/Users/nathanst/bidir/pancake/p11_G2-E");
 	cout << "HEUR:GAP-3\n";
-	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	Solve(&o3, "/Users/nathanst/bidir/pancake/p11_G2-E");
 	cout << "HEUR:GAP*0.9\n";
-	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	Solve(&w9, "/Users/nathanst/bidir/pancake/p11_G2-E");
 	cout << "HEUR:GAP*0.8\n";
-	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	Solve(&w8, "/Users/nathanst/bidir/pancake/p11_G2-E");
 	cout << "HEUR:GAP*0.7\n";
-	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	Solve(&w7, "/Users/nathanst/bidir/pancake/p11_G2-E");
 
 //	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G0");
 //	Solve(&pancake1, "/Users/nathanst/bidir/pancake/p11_G1");
