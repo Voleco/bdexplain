@@ -536,16 +536,18 @@ void Solve(Heuristic<PancakePuzzleState<CNT>> *h, const char *name)
 			//}
 
 	}
-}
+		if (1)
+		{
+			std::vector<PancakePuzzleState<CNT>> nbsPath;
+			NBS<PancakePuzzleState<CNT>, PancakePuzzleAction, PancakePuzzle<CNT>> nbs;
+			nbs.GetPath(&pancake, start, goal, h, h, nbsPath);
+			printf("NBS found path length %1.0f; %llu expanded; %llu necessary; %f meeting\n", pancake.GetPathLength(nbsPath),
+				nbs.GetNodesExpanded(), nbs.GetNecessaryExpansions(), nbs.GetMeetingPoint());
+		}
 	
-	if (0)
-	{
-		std::vector<PancakePuzzleState<CNT>> nbsPath;
-		NBS<PancakePuzzleState<CNT>, PancakePuzzleAction, PancakePuzzle<CNT>> nbs;
-		nbs.GetPath(&pancake, start, goal, h, h, nbsPath);
-		printf("NBS found path length %1.0f; %llu expanded; %llu necessary; %f meeting\n", pancake.GetPathLength(nbsPath),
-			   nbs.GetNodesExpanded(), nbs.GetNecessaryExpansions(), nbs.GetMeetingPoint());
 	}
+	
+
 }
 
 void TestError()
