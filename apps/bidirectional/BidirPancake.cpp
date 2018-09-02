@@ -261,7 +261,7 @@ void TestPancakeRandom()
 	}
 }
 
-const int CNT = 20;
+const int CNT = 16;
 void TestPancakeHard(int gap)
 {
 	srandom(2017218);
@@ -468,7 +468,7 @@ void Solve(Heuristic<PancakePuzzleState<CNT>> *h, const char *name)
 		GetPancakeInstance(start, count);
 
 		printf("Problem %d of %d\n", count + 1, 100);
-		//std::cout << original << "; Initial heuristic " << pancake.HCost(original, goal) << "\n";
+		std::cout << start << "; Initial heuristic " << h->HCost(start, goal) << "\n";
 
 
 
@@ -646,9 +646,24 @@ void TestVariants()
 	goal.Reset();
 	original.Reset();
 
-
+	cout << "HEUR:GAP\n";
 	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
-
+	cout << "HEUR:GAP\\1\n";
+	Solve(&pancake1, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP\\2\n";
+	Solve(&pancake2, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP-1\n";
+	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP-2\n";
+	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP-3\n";
+	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP*0.9\n";
+	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP*0.8\n";
+	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP*0.7\n";
+	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
 
 //	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G0");
 //	Solve(&pancake1, "/Users/nathanst/bidir/pancake/p11_G1");
