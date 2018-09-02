@@ -46,6 +46,7 @@ public:
 		forwardSum = 0;
 		backwardSum = 0;
 		optCostStr = "Optimal cost: "+std::to_string(optCost);
+		std::cout<<optCostStr<<"\n";
 		if (astarf.GetNecessaryExpansions() == 0 || astarb.GetNecessaryExpansions() == 0)
 		{
 			printf("No necessary expansions\n");
@@ -125,6 +126,8 @@ public:
 		totalWork = backwardSum;
 		const int forwardCopy = forwardSum;
 		const int backwardCopy = backwardSum;
+		int bdTotalWork = 0;
+		bool firstTimeBD = true;
 		//	printf("--At f: %1f b:%1f work is %d\n", -1.0f, m_b.rbegin()->first, backwardSum);
 		{
 			// compute optimal partition
@@ -167,18 +170,26 @@ public:
 					//				printf("%1.1f+%1.1f vs %1.1f\n", fi->first, bi->first, optCost);
 					auto tmp = bi;
 					tmp--;
-					if (fi->first+(tmp)->first >= optCost)
+					if (fi->first+(tmp)->first+epsilon >= optCost)
 						break;
 					
 				}
-				//			printf("Considering: %d + %d = %d\n", forwardSum, backwardSum, forwardSum+backwardSum);
+							//printf("Considering: %d + %d = %d\n", forwardSum, backwardSum, forwardSum+backwardSum);
+							if(firstTimeBD)
+							{
+								bdTotalWork = forwardSum + backwardSum;
+								firstTimeBD = false;
+							}
+								
+
 				if (fi == m_f.end())
 					break;
-				//			printf("--At f: %1f b:%1f work is %d\n", fi->first, (bi == m_b.rend())?-1:bi->first, forwardSum+backwardSum);
+							//printf("--At f: %1f b:%1f work is %d\n", fi->first, (bi == m_b.rend())?-1:bi->first, forwardSum+backwardSum);
 				
 				if (forwardSum+backwardSum < totalWork)
 				{
 					totalWork = forwardSum+backwardSum;
+					bdTotalWork = totalWork;
 					forwardOptG = fi->first;
 					if (bi == m_b.rend())
 						backwardOptG = -1;
@@ -202,7 +213,7 @@ public:
 		}
 		
 		{
-			printf("Forward/Backward/Min: %d %d %d %s\n", forwardCopy, backwardCopy, totalWork,
+			printf("Forward/Backward/Bidir/Min: %d %d %d %d %s\n", forwardCopy, backwardCopy, bdTotalWork, totalWork,
 				   (std::min(forwardCopy, backwardCopy)!=totalWork)?"bidirectional wins!":"" );
 			forwardSum = forwardCopy;
 			backwardSum = backwardCopy;

@@ -474,7 +474,7 @@ void Solve(Heuristic<PancakePuzzleState<CNT>> *h, const char *name)
 
 		if (1)
 		{
-			BidirectionalProblemAnalyzer<PancakePuzzleState<CNT>, PancakePuzzleAction, PancakePuzzle<CNT>> p(start, goal, &pancake, h, h);
+			BidirectionalProblemAnalyzer<PancakePuzzleState<CNT>, PancakePuzzleAction, PancakePuzzle<CNT>,1> p(start, goal, &pancake, h, h);
 			//p.drawProblemInstance = false;
 			//p.drawStatistics = false;
 			//p.drawMinimumVC = true;
