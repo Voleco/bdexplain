@@ -26,6 +26,17 @@ void TestRob();
 void TestVariants();
 void TestError();
 
+
+template <class state>
+class GAPIncludeKHeuristic : public Heuristic<state> {
+public:
+	GAPIncludeKHeuristic(Heuristic<state> *_h1, Heuristic<state> *_h2) :h1(_h1), h2(_h2) {}
+	double HCost(const state &a, const state &b) const { return std::max(h1->HCost(a, b) ,h2->HCost(a,b)); }
+	//private:
+	Heuristic<state> *h1;
+	Heuristic<state> *h2;
+};
+
 void TestPancake()
 {
 //	TestRob();
@@ -640,30 +651,36 @@ void TestVariants()
 	WeightedHeuristic<PancakePuzzleState<CNT>> w9(&pancake0, 0.9);
 	WeightedHeuristic<PancakePuzzleState<CNT>> w8(&pancake0, 0.8);
 	WeightedHeuristic<PancakePuzzleState<CNT>> w7(&pancake0, 0.7);
-
+	PancakePuzzle<CNT> pancake_2(-2);
+	GAPIncludeKHeuristic<PancakePuzzleState<CNT>> k2(&pancake2, &pancake_2);
 
 
 	goal.Reset();
 	original.Reset();
 
-	cout << "HEUR:GAP\n";
-	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP\\1\n";
-	Solve(&pancake1, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP\\2\n";
-	Solve(&pancake2, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP-1\n";
-	Solve(&o1, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP-2\n";
-	Solve(&o2, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP-3\n";
-	Solve(&o3, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP*0.9\n";
-	Solve(&w9, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP*0.8\n";
-	Solve(&w8, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP*0.7\n";
-	Solve(&w7, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP\n";
+	//Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP\\1\n";
+	//Solve(&pancake1, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP\\2\n";
+	//Solve(&pancake2, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP-1\n";
+	//Solve(&o1, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP-2\n";
+	//Solve(&o2, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP-3\n";
+	//Solve(&o3, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP*0.9\n";
+	//Solve(&w9, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP*0.8\n";
+	//Solve(&w8, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP*0.7\n";
+	//Solve(&w7, "/Users/nathanst/bidir/pancake/p11_G2-E");
+
+	cout << "HEUR:GAP\\(N-2)\n";
+	Solve(&pancake_2, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:max(GAP\\2,GAP\\(N-2))\n";
+	Solve(&k2, "/Users/nathanst/bidir/pancake/p11_G2-E");
 
 //	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G0");
 //	Solve(&pancake1, "/Users/nathanst/bidir/pancake/p11_G1");
