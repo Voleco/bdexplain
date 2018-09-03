@@ -427,9 +427,14 @@ double PancakePuzzle<N>::DefaultH(const PancakePuzzleState<N> &state, const std:
 				continue;
 		}
 		else//gap <0
-			//caculate GAP\N-K. if both i and i+1 > gap, skip.
+			//caculate GAP\N-K. if both i and i+1 > |gap|, skip.
+		//{
+		//	if ((goal_locs[state.puzzle[i]] >= 0-gap) && (goal_locs[state.puzzle[i + 1]] >= 0-gap))
+		//		continue;
+		//}
+		//caculate GAP\N-K. if one of i or i+1 > N-|gap|, skip.
 		{
-			if ((goal_locs[state.puzzle[i]] > 0-gap) && (goal_locs[state.puzzle[i + 1]] > 0-gap))
+			if ((goal_locs[state.puzzle[i]] >= N - gap) || (goal_locs[state.puzzle[i + 1]] >= N - gap))
 				continue;
 		}
 		int diff = goal_locs[state.puzzle[i]] - goal_locs[state.puzzle[i+1]];
