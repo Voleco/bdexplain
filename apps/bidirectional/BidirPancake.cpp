@@ -552,8 +552,14 @@ void Solve(Heuristic<PancakePuzzleState<CNT>> *h, const char *name)
 			std::vector<PancakePuzzleState<CNT>> nbsPath;
 			NBS<PancakePuzzleState<CNT>, PancakePuzzleAction, PancakePuzzle<CNT>> nbs;
 			nbs.GetPath(&pancake, start, goal, h, h, nbsPath);
-			printf("NBS found path length %1.0f; %llu expanded; %llu necessary; %f meeting\n", pancake.GetPathLength(nbsPath),
+			printf("NBS1 found path length %1.0f; %llu expanded; %llu necessary; %f meeting\n", pancake.GetPathLength(nbsPath),
 				nbs.GetNodesExpanded(), nbs.GetNecessaryExpansions(), nbs.GetMeetingPoint());
+
+			std::vector<PancakePuzzleState<CNT>> nbsPath2;
+			NBS<PancakePuzzleState<CNT>, PancakePuzzleAction, PancakePuzzle<CNT>, NBSQueue<PancakePuzzleState<CNT>, 1,1>> nbs2;
+			nbs2.GetPath(&pancake, start, goal, h, h, nbsPath2);
+			printf("NBS2 found path length %1.0f; %llu expanded; %llu necessary; %f meeting\n", pancake.GetPathLength(nbsPath2),
+				nbs2.GetNodesExpanded(), nbs2.GetNecessaryExpansions(), nbs2.GetMeetingPoint());
 		}
 	
 	}
@@ -658,24 +664,24 @@ void TestVariants()
 	goal.Reset();
 	original.Reset();
 
-	//cout << "HEUR:GAP\n";
-	//Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	//cout << "HEUR:GAP\\1\n";
-	//Solve(&pancake1, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	//cout << "HEUR:GAP\\2\n";
-	//Solve(&pancake2, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	//cout << "HEUR:GAP-1\n";
-	//Solve(&o1, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	//cout << "HEUR:GAP-2\n";
-	//Solve(&o2, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	//cout << "HEUR:GAP-3\n";
-	//Solve(&o3, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	//cout << "HEUR:GAP*0.9\n";
-	//Solve(&w9, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	//cout << "HEUR:GAP*0.8\n";
-	//Solve(&w8, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	//cout << "HEUR:GAP*0.7\n";
-	//Solve(&w7, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP\n";
+	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP\\1\n";
+	Solve(&pancake1, "/home/jingwei/Desktop/Shared/pangraphs/hehe");
+	cout << "HEUR:GAP\\2\n";
+	Solve(&pancake2, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP-1\n";
+	Solve(&o1, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP-2\n";
+	Solve(&o2, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP-3\n";
+	Solve(&o3, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP*0.9\n";
+	Solve(&w9, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP*0.8\n";
+	Solve(&w8, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	cout << "HEUR:GAP*0.7\n";
+	Solve(&w7, "/Users/nathanst/bidir/pancake/p11_G2-E");
 
 	cout << "HEUR:GAP\\(N-2)\n";
 	Solve(&pancake_2, "/Users/nathanst/bidir/pancake/p11_G2-E");

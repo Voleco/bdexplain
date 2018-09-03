@@ -15,7 +15,7 @@
 #include <sstream>
 #include "StringUtils.h"
 
-template <class state, class action, class environment, int epsilon =0>
+template <class state, class action, class environment, int epsilon =1>
 class BidirectionalProblemAnalyzer {
 public:
 	BidirectionalProblemAnalyzer(const state &s, const state &g, environment *e,
@@ -148,7 +148,7 @@ public:
 					bi++;
 					if (bi == m_b.rend())
 						break;
-				} while (fi->first+bi->first+epsilon > optCost);
+				} while (fi->first+bi->first+2*epsilon >= optCost);
 				if (bi == m_b.rend())
 					break;
 				// Find all the necessary forward entries to maintain the vertex cover
@@ -170,7 +170,7 @@ public:
 					//				printf("%1.1f+%1.1f vs %1.1f\n", fi->first, bi->first, optCost);
 					auto tmp = bi;
 					tmp--;
-					if (fi->first+(tmp)->first+epsilon >= optCost)
+					if (fi->first+(tmp)->first+2*epsilon  > optCost)
 						break;
 					
 				}
@@ -184,7 +184,7 @@ public:
 
 				if (fi == m_f.end())
 					break;
-							//printf("--At f: %1f b:%1f work is %d\n", fi->first, (bi == m_b.rend())?-1:bi->first, forwardSum+backwardSum);
+							printf("--At f: %1f b:%1f work is %d\n", fi->first, (bi == m_b.rend())?-1:bi->first, forwardSum+backwardSum);
 				
 				if (forwardSum+backwardSum < totalWork)
 				{
