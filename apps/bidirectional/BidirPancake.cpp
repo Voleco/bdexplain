@@ -485,7 +485,7 @@ void Solve(Heuristic<PancakePuzzleState<CNT>> *h, const char *name)
 
 		if (1)
 		{
-			BidirectionalProblemAnalyzer<PancakePuzzleState<CNT>, PancakePuzzleAction, PancakePuzzle<CNT>,1> p(start, goal, &pancake, h, h);
+			BidirectionalProblemAnalyzer<PancakePuzzleState<CNT>, PancakePuzzleAction, PancakePuzzle<CNT>,0> p(start, goal, &pancake, h, h);
 			//p.drawProblemInstance = false;
 			//p.drawStatistics = false;
 			//p.drawMinimumVC = true;
@@ -664,27 +664,27 @@ void TestVariants()
 	goal.Reset();
 	original.Reset();
 
-	cout << "HEUR:GAP\n";
-	Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP\\1\n";
-	Solve(&pancake1, "/home/jingwei/Desktop/Shared/pangraphs/hehe");
-	cout << "HEUR:GAP\\2\n";
-	Solve(&pancake2, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP-1\n";
-	Solve(&o1, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP-2\n";
-	Solve(&o2, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP-3\n";
-	Solve(&o3, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP*0.9\n";
-	Solve(&w9, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP*0.8\n";
-	Solve(&w8, "/Users/nathanst/bidir/pancake/p11_G2-E");
-	cout << "HEUR:GAP*0.7\n";
-	Solve(&w7, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP\n";
+	//Solve(&pancake0, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP\\1\n";
+	//Solve(&pancake1, "/home/jingwei/Desktop/Shared/pangraphs/hehe");
+	//cout << "HEUR:GAP\\2\n";
+	//Solve(&pancake2, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP-1\n";
+	//Solve(&o1, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP-2\n";
+	//Solve(&o2, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP-3\n";
+	//Solve(&o3, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP*0.9\n";
+	//Solve(&w9, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP*0.8\n";
+	//Solve(&w8, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP*0.7\n";
+	//Solve(&w7, "/Users/nathanst/bidir/pancake/p11_G2-E");
 
-	cout << "HEUR:GAP\\(N-2)\n";
-	Solve(&pancake_2, "/Users/nathanst/bidir/pancake/p11_G2-E");
+	//cout << "HEUR:GAP\\(N-2)\n";
+	//Solve(&pancake_2, "/Users/nathanst/bidir/pancake/p11_G2-E");
 
 	cout << "HEUR:max(GAP\\2,GAP\\(N-2))\n";
 	Solve(&k2, "/Users/nathanst/bidir/pancake/p11_G2-E");
