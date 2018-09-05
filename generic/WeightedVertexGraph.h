@@ -148,7 +148,7 @@ public:
 					bi++;
 					if (bi == m_b.rend())
 						break;
-				} while (fi->first+bi->first+2*epsilon >= optCost);
+				} while (fi->first+bi->first+2*epsilon > optCost);
 				if (bi == m_b.rend())
 					break;
 				// Find all the necessary forward entries to maintain the vertex cover
@@ -170,7 +170,7 @@ public:
 					//				printf("%1.1f+%1.1f vs %1.1f\n", fi->first, bi->first, optCost);
 					auto tmp = bi;
 					tmp--;
-					if (fi->first+(tmp)->first+2*epsilon  > optCost)
+					if (fi->first+(tmp)->first+2*epsilon  >= optCost)
 						break;
 					
 				}
