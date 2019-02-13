@@ -17,6 +17,7 @@
 #include "STPInstances.h"
 #include "LexPermutationPDB.h"
 #include "MR1PermutationPDB.h"
+#include "NonlinearWeightedAStar.h"
 
 typedef MR1PermutationPDB<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>> STPPDB;
 void MakePDBs(MNPuzzleState<4, 4> g, Heuristic<MNPuzzleState<4, 4>> &h, MNPuzzle<4,4> &mnp)
@@ -49,31 +50,46 @@ void MakePDBs(MNPuzzleState<4, 4> g, Heuristic<MNPuzzleState<4, 4>> &h, MNPuzzle
 //	h.heuristics.push_back(pdb4);
 }
 
-void TestSTP(int algorithm)
+void TestSTP(int algorithm, int weightType,int low, int high,int reopen)
 {
 	NBS<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4,4>> nbs;
 	MM<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4,4>> mm;
 	BSStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4,4>> bs;
 	TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4,4>> astar;
+	TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>, AStarOpenClosed<MNPuzzleState<4, 4>, QuadraticCompare1<MNPuzzleState<4, 4>>>> gf;
+	TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>, AStarOpenClosed<MNPuzzleState<4, 4>, QuadraticCompare2<MNPuzzleState<4, 4>>>> gf2;
+	
+	if (reopen != 0)
+	{
+		astar.SetReopenNodes(true);
+		gf.SetReopenNodes(true);
+		gf2.SetReopenNodes(true);
+	}
+
 	MNPuzzle<4,4> mnp;
 	
-	Heuristic<MNPuzzleState<4, 4>> h_f;
+
+	mnp.SetWeighted(static_cast<puzzleWeight>(weightType));
+
+	//Heuristic<MNPuzzleState<4, 4>> h_f;
 	MNPuzzleState<4, 4> start, goal;
-	MakePDBs(goal, h_f, mnp);
+	//MakePDBs(goal, h_f, mnp);
 
 	
-	for (int x = 0; x < 100; x++) // 547 to 540
+	for (int x = low; x < high; x++) // 547 to 540
 	{
 		Heuristic<MNPuzzleState<4, 4>> h_b;
 		printf("Problem %d of %d\n", x+1, 100);
 		
 		std::vector<MNPuzzleState<4,4>> nbsPath;
+		std::vector<MNPuzzleState<4, 4>> gfPath;
+		std::vector<MNPuzzleState<4, 4>> gf2Path;
 		std::vector<MNPuzzleState<4,4>> astarPath;
 		Timer t1, t2;
 
 		start = STP::GetKorfInstance(x);
 		goal.Reset();
-		MakePDBs(start, h_b, mnp);
+		/*		MakePDBs(start, h_b, mnp);
 
 		if (algorithm == -1 || algorithm == 10) // Optimal Analysis
 		{
@@ -103,63 +119,78 @@ void TestSTP(int algorithm)
 
 		}
 
+		*/
 		if (algorithm == 0 || algorithm == 10) // A*
 		{
 			goal.Reset();
 			start = STP::GetKorfInstance(x);
 			t1.StartTimer();
-			astar.SetHeuristic(&h_f);
+			//astar.SetHeuristic(&h_f);
+			astar.SetHeuristic(&mnp);
+			astar.SetWeight(n_weight);
 			astar.GetPath(&mnp, start, goal, astarPath);
 			t1.EndTimer();
-			printf("A* found path length %1.0f; %llu expanded; %llu necessary; %llu generated; %1.2fs elapsed\n", mnp.GetPathLength(astarPath),
-				   astar.GetNodesExpanded(), astar.GetNecessaryExpansions(), astar.GetNodesTouched(), t1.GetElapsedTime());
+			printf("WA*/gf1/gf2 found path length/expanded/time \t%1.0f \t%llu \t%1.2f", mnp.GetPathLength(astarPath),
+				   astar.GetNodesExpanded(), t1.GetElapsedTime());
+			t1.StartTimer();
+			gf.SetHeuristic(&mnp);
+			gf.GetPath(&mnp, start, goal, gfPath);
+			t1.EndTimer();
+			printf(" \t%1.0f \t%llu \t%1.2f", mnp.GetPathLength(gfPath),
+				gf.GetNodesExpanded(), t1.GetElapsedTime());
+			t1.StartTimer();
+			gf2.SetHeuristic(&mnp);
+			gf2.GetPath(&mnp, start, goal, gf2Path);
+			t1.EndTimer();
+			printf(" \t%1.0f \t%llu \t%1.2f\n", mnp.GetPathLength(gf2Path),
+				gf2.GetNodesExpanded(), t1.GetElapsedTime());
 		}
-		if (algorithm == 1) // BS*
-		{
-			goal.Reset();
-			start = STP::GetKorfInstance(x);
-			t2.StartTimer();
-			bs.GetPath(&mnp, start, goal, &mnp, &mnp, nbsPath);
-			t2.EndTimer();
-			printf("BS* found path length %1.0f; %llu expanded; %llu necessary; %llu generated; %1.2fs elapsed\n", mnp.GetPathLength(nbsPath),
-				   bs.GetNodesExpanded(), bs.GetNecessaryExpansions(), bs.GetNodesTouched(), t2.GetElapsedTime());
-		}
-		if (algorithm == 2) // MM
-		{
-			goal.Reset();
-			start = STP::GetKorfInstance(x);
-			t2.StartTimer();
-			mm.GetPath(&mnp, start, goal, &mnp, &mnp, nbsPath);
-			t2.EndTimer();
-			printf("MM found path length %1.0f; %llu expanded; %llu necessary; %llu generated; %1.2fs elapsed\n", mnp.GetPathLength(nbsPath),
-				   mm.GetNodesExpanded(), mm.GetNecessaryExpansions(), mm.GetNodesTouched(), t2.GetElapsedTime());
-		}
-		if (algorithm == 3||algorithm == 10) // NBS
-		{
-			goal.Reset();
-			start = STP::GetKorfInstance(x);
-			t2.StartTimer();
-			nbs.GetPath(&mnp, start, goal, &h_f, &h_b, nbsPath);
-			t2.EndTimer();
-			printf("NBS found path length %1.0f; %llu expanded; %llu necessary; %llu generated; %1.2fs elapsed\n", mnp.GetPathLength(nbsPath),
-				   nbs.GetNodesExpanded(), nbs.GetNecessaryExpansions(), nbs.GetNodesTouched(), t2.GetElapsedTime());
-		}
-		if (algorithm == 4) // MM0
-		{
-			ZeroHeuristic<MNPuzzleState<4,4>> z;
-			goal.Reset();
-			start = STP::GetKorfInstance(x);
-			t2.StartTimer();
-			mm.GetPath(&mnp, start, goal, &z, &z, nbsPath);
-			t2.EndTimer();
-			printf("MM found path length %1.0f; %llu expanded; %llu necessary; %llu generated; %1.2fs elapsed\n", mnp.GetPathLength(nbsPath),
-				   mm.GetNodesExpanded(), mm.GetNecessaryExpansions(), mm.GetNodesTouched(), t2.GetElapsedTime());
-		}
-		
+		//if (algorithm == 1) // BS*
+		//{
+		//	goal.Reset();
+		//	start = STP::GetKorfInstance(x);
+		//	t2.StartTimer();
+		//	bs.GetPath(&mnp, start, goal, &mnp, &mnp, nbsPath);
+		//	t2.EndTimer();
+		//	printf("BS* found path length %1.0f; %llu expanded; %llu necessary; %llu generated; %1.2fs elapsed\n", mnp.GetPathLength(nbsPath),
+		//		   bs.GetNodesExpanded(), bs.GetNecessaryExpansions(), bs.GetNodesTouched(), t2.GetElapsedTime());
+		//}
+		//if (algorithm == 2) // MM
+		//{
+		//	goal.Reset();
+		//	start = STP::GetKorfInstance(x);
+		//	t2.StartTimer();
+		//	mm.GetPath(&mnp, start, goal, &mnp, &mnp, nbsPath);
+		//	t2.EndTimer();
+		//	printf("MM found path length %1.0f; %llu expanded; %llu necessary; %llu generated; %1.2fs elapsed\n", mnp.GetPathLength(nbsPath),
+		//		   mm.GetNodesExpanded(), mm.GetNecessaryExpansions(), mm.GetNodesTouched(), t2.GetElapsedTime());
+		//}
+		//if (algorithm == 3||algorithm == 10) // NBS
+		//{
+		//	goal.Reset();
+		//	start = STP::GetKorfInstance(x);
+		//	t2.StartTimer();
+		//	nbs.GetPath(&mnp, start, goal, &h_f, &h_b, nbsPath);
+		//	t2.EndTimer();
+		//	printf("NBS found path length %1.0f; %llu expanded; %llu necessary; %llu generated; %1.2fs elapsed\n", mnp.GetPathLength(nbsPath),
+		//		   nbs.GetNodesExpanded(), nbs.GetNecessaryExpansions(), nbs.GetNodesTouched(), t2.GetElapsedTime());
+		//}
+		//if (algorithm == 4) // MM0
+		//{
+		//	ZeroHeuristic<MNPuzzleState<4,4>> z;
+		//	goal.Reset();
+		//	start = STP::GetKorfInstance(x);
+		//	t2.StartTimer();
+		//	mm.GetPath(&mnp, start, goal, &z, &z, nbsPath);
+		//	t2.EndTimer();
+		//	printf("MM found path length %1.0f; %llu expanded; %llu necessary; %llu generated; %1.2fs elapsed\n", mnp.GetPathLength(nbsPath),
+		//		   mm.GetNodesExpanded(), mm.GetNecessaryExpansions(), mm.GetNodesTouched(), t2.GetElapsedTime());
+		//}
+		//
 
-		delete h_b.heuristics[1];
-		delete h_b.heuristics[2];
-		delete h_b.heuristics[3];
+		//delete h_b.heuristics[1];
+		//delete h_b.heuristics[2];
+		//delete h_b.heuristics[3];
 //		delete h_b.heuristics[4];
 //
 //		std::cout << astar.GetNodesExpanded() << "\t" << nbs.GetNodesExpanded() << "\t";

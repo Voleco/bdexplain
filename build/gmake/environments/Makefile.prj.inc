@@ -42,6 +42,7 @@ SRC_CPP = \
 	environments/RoboticArm.cpp  \
 	environments/ConfigEnvironment.cpp \
 	environments/PancakePuzzle.cpp \
+	environments/HeavyPancakePuzzle.cpp \
 	environments/Map3DGrid.cpp \
 	environments/Map2DHeading.cpp \
 	environments/MinimalSectorAbstraction.cpp \

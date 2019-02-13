@@ -16,6 +16,8 @@
 #include "PancakeInstances.h"
 #include "WeightedVertexGraph.h"
 #include "HeuristicError.h"
+#include "HeavyPancakePuzzle.h"
+#include "NonlinearWeightedAStar.h"
 
 const int S = 10; // must be factor of sizes below
 
@@ -25,7 +27,7 @@ void TestPancakeHard(int gap = 0);
 void TestRob();
 void TestVariants();
 void TestError();
-
+void TestPancakeHeavy();
 
 template <class state>
 class GAPIncludeKHeuristic : public Heuristic<state> {
@@ -39,6 +41,7 @@ public:
 
 void TestPancake()
 {
+	TestPancakeHeavy();
 //	TestRob();
 //	TestPancakeRandom();
 
@@ -46,10 +49,83 @@ void TestPancake()
 //	TestPancakeHard(1);
 //	TestPancakeHard(2);
 //	TestError();
-	TestVariants();
+//	TestVariants();
 	exit(0);
 }
+const int N = 12;
+void TestPancakeHeavy()
+{
+	for (int gap = 0; gap < 1; gap++)
+	{
+		srandom(201902);
+		PancakePuzzleState<N> start;
+		PancakePuzzleState<N> original;
+		PancakePuzzleState<N> goal;
+		HeavyPancakePuzzle<N> pancake(2,gap);
 
+		std::vector<PancakePuzzleState<N>> wastarPath;
+		std::vector<PancakePuzzleState<N>> c1Path;
+		std::vector<PancakePuzzleState<N>> c2Path;
+
+		Timer t1, t2, t3, t4, t5;
+
+		for (int count = 0; count < 50; count++)
+		{
+			srandom(random());
+
+			goal.Reset();
+			original.Reset();
+			for (int x = 0; x < N; x++)
+				std::swap(original.puzzle[x], original.puzzle[x + random() % (N - x)]);
+
+			printf("Problem %d of %d\n", count + 1, 50);
+			std::cout << original << "\n";
+
+			// WA*
+			if (1)
+			{
+				TemplateAStar<PancakePuzzleState<N>, PancakePuzzleAction, HeavyPancakePuzzle<N>> wastar;
+				wastar.SetWeight(n_weight);
+				start = original;
+				t1.StartTimer();
+				wastar.GetPath(&pancake, start, goal, wastarPath);
+				t1.EndTimer();
+				printf("WA* found path length %1.0f; %llu expanded; %1.2fs elapsed\n", pancake.GetPathLength(wastarPath),
+					wastar.GetNodesExpanded(), t1.GetElapsedTime());
+			}
+
+			// curve1
+			if (1)
+			{
+				TemplateAStar<PancakePuzzleState<N>, PancakePuzzleAction, HeavyPancakePuzzle<N>, 
+					AStarOpenClosed<PancakePuzzleState<N>, QuadraticCompare1<PancakePuzzleState<N>>>> c1;
+				
+				goal.Reset();
+				start = original;
+				t2.StartTimer();
+				c1.GetPath(&pancake, start, goal, c1Path);
+				t2.EndTimer();
+				printf("Curve1 found path length %1.0f; %llu expanded; %1.2fs elapsed\n", pancake.GetPathLength(c1Path),
+					c1.GetNodesExpanded(),  t2.GetElapsedTime());
+			}
+
+			// curve2
+			if (1)
+			{
+				TemplateAStar<PancakePuzzleState<N>, PancakePuzzleAction, HeavyPancakePuzzle<N>,
+					AStarOpenClosed<PancakePuzzleState<N>, QuadraticCompare2<PancakePuzzleState<N>> >> c2;
+
+				goal.Reset();
+				start = original;
+				t3.StartTimer();
+				c2.GetPath(&pancake, start, goal, c2Path);
+				t3.EndTimer();
+				printf("Curve2 found path length %1.0f; %llu expanded; %1.2fs elapsed\n", pancake.GetPathLength(c2Path),
+					c2.GetNodesExpanded(), t3.GetElapsedTime());
+			}
+		}
+	}
+}
 
 void TestRob()
 {
@@ -159,7 +235,7 @@ void TestPancakeTR()
 	exit(0);
 }
 
-const int N = 20;
+
 void TestPancakeRandom()
 {
 	for (int gap = 0; gap < 1; gap++)
