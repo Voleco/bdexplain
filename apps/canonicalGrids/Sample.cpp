@@ -1878,7 +1878,7 @@ void WeightedAStarExperiments(char *scenario, double weight)
 	Map *m = new Map(s.GetNthExperiment(0).GetMapName());
 	MapEnvironment *me = new MapEnvironment(m);
 	//CanonicalGrid::CanonicalGrid *cge = new CanonicalGrid::CanonicalGrid(m);
-	TemplateAStar<xyLoc, tDirection, MapEnvironment, IndexOpenClosed<xyLoc>> astar;
+	TemplateAStar<xyLoc, tDirection, MapEnvironment, IndexOpenClosed<xyLoc>, IndexCompare<xyLoc>> astar;
 	//TemplateAStar<CanonicalGrid::xyLoc, CanonicalGrid::tDirection, CanonicalGrid::CanonicalGrid> canAstar;
 
 	Timer t;
@@ -1915,7 +1915,7 @@ void WeightedCanAStarExperiments(char *scenario, double weight)
 	Map *m = new Map(s.GetNthExperiment(0).GetMapName());
 	MapEnvironment *me = new MapEnvironment(m);
 	//CanonicalGrid::CanonicalGrid *cge = new CanonicalGrid::CanonicalGrid(m);
-	TemplateAStar<xyLoc, tDirection, MapEnvironment, IndexOpenClosed<xyLoc>> astar;
+	TemplateAStar<xyLoc, tDirection, MapEnvironment, IndexOpenClosed<xyLoc>, IndexCompare<xyLoc>> astar;
 	//TemplateAStar<CanonicalGrid::xyLoc, CanonicalGrid::tDirection, CanonicalGrid::CanonicalGrid> canAstar;
 	JPS jps(m);
 	
@@ -1988,8 +1988,8 @@ void DijkstraExperiments(char *scenario)
 	Map *m = new Map(s.GetNthExperiment(0).GetMapName());
 	MapEnvironment *me = new MapEnvironment(m);
 	CanonicalGrid::CanonicalGrid *cge = new CanonicalGrid::CanonicalGrid(m);
-	TemplateAStar<xyLoc, tDirection, MapEnvironment, IndexOpenClosed<xyLoc>> astar;
-	TemplateAStar<CanonicalGrid::xyLoc, CanonicalGrid::tDirection, CanonicalGrid::CanonicalGrid, IndexOpenClosed<CanonicalGrid::xyLoc>> canAstar;
+	TemplateAStar<xyLoc, tDirection, MapEnvironment, IndexOpenClosed<xyLoc>, IndexCompare<xyLoc>> astar;
+	TemplateAStar<CanonicalGrid::xyLoc, CanonicalGrid::tDirection, CanonicalGrid::CanonicalGrid, IndexOpenClosed<CanonicalGrid::xyLoc>, IndexCompare<CanonicalGrid::xyLoc>> canAstar;
 	CanonicalDijkstra gjps;
 	astar.SetStopAfterGoal(false);
 	canAstar.SetStopAfterGoal(false);

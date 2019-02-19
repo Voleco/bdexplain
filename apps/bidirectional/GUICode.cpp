@@ -1190,7 +1190,7 @@ void AnalyzeGreedy(const char *scenario, double wt,int reopen)
 {
 	//GreedyFocal2<xyLoc, tDirection, MapEnvironment> gf;
 	//TemplateAStar<xyLoc, tDirection, MapEnvironment, AStarOpenClosed<xyLoc, QuadraticCompare2<xyLoc>>> gf;
-	TemplateAStar<xyLoc, tDirection, MapEnvironment, AStarOpenClosed<xyLoc, QuadraticCompare1<xyLoc>>> gf;
+	TemplateAStar<xyLoc, tDirection, MapEnvironment, AStarOpenClosed<xyLoc, QuadraticCompare1<xyLoc>>, QuadraticCompare1<xyLoc>> gf;
 	if (reopen != 0)
 		gf.SetReopenNodes(true);
 	//gf.SetWeight(wt);
@@ -1199,7 +1199,7 @@ void AnalyzeGreedy(const char *scenario, double wt,int reopen)
 	//TemplateAStar<xyLoc, tDirection, MapEnvironment> forwardAStar;
 	//TemplateAStar<xyLoc, tDirection, MapEnvironment, AStarOpenClosed<xyLoc, RickCompare2<xyLoc>>> forwardAStar;
 	//forwardAStar.SetWeight(wt);
-	TemplateAStar<xyLoc, tDirection, MapEnvironment, AStarOpenClosed<xyLoc, QuadraticCompare2<xyLoc>>> gf2;
+	TemplateAStar<xyLoc, tDirection, MapEnvironment, AStarOpenClosed<xyLoc, QuadraticCompare2<xyLoc>>, QuadraticCompare2<xyLoc>> gf2;
 	if (reopen != 0)
 		gf2.SetReopenNodes(true);
 	//gf2.SetWeight(wt);
@@ -1269,12 +1269,12 @@ void AnalyzeGreedy(const char *scenario, double wt,int reopen)
 		t2 = t.GetElapsedTime();
 
 		t.StartTimer();
-		gf2.GetPath(me, start, goal, gf2Path);
+		gf.GetPath(me, start, goal, gfPath);
 		t.EndTimer();
 		t3 = t.GetElapsedTime();
 
 		t.StartTimer();
-		gf.GetPath(me, start, goal, gfPath);
+		gf2.GetPath(me, start, goal, gf2Path);
 		t.EndTimer();
 		t4 = t.GetElapsedTime();
 
@@ -1291,9 +1291,15 @@ void AnalyzeGreedy(const char *scenario, double wt,int reopen)
 		std::cout << "nodes:\t"
 			<< forwardAStar.GetNodesExpanded() << "\t"
 			<< forwardAStar.GetNecessaryExpansions() << "\t"
-			<< gf2.GetNodesExpanded() << "\t"
-			//<< gf2.GetNecessaryExpansions() << "\t"
+			<< forwardAStar.GetNecessaryExpansions2() << "\t"
+			<< forwardAStar.GetNodesExplored()<<"\t"
 			<< gf.GetNodesExpanded() << "\t"
+			<< gf.GetNodesExplored() << "\t"
+			<< gf.GetNecessaryExpansions2() << "\t"
+			//<< gf2.GetNecessaryExpansions() << "\t"
+			<< gf2.GetNodesExpanded() << "\t"
+			<< gf2.GetNodesExplored() << "\t"
+			<< gf2.GetNecessaryExpansions2() << "\t"
 			//<< lessThanWOpitmal
 			<< "\n";
 		//forwardAStar: WA*

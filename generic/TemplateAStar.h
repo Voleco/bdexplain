@@ -51,7 +51,7 @@ struct AStarCompare {
 /**
  * A templated version of A*, based on HOG genericAStar
  */
-template <class state, class action, class environment, class openList = AStarOpenClosed<state, AStarCompare<state>> >
+template <class state, class action, class environment, class openList = AStarOpenClosed<state, AStarCompare<state>> , class CmpKey = AStarCompare<state>>
 class TemplateAStar : public GenericSearchAlgorithm<state,action,environment> {
 public:
 	TemplateAStar() {
@@ -87,7 +87,7 @@ public:
 	
 	void PrintStats();
 	uint64_t GetUniqueNodesExpanded() { return uniqueNodesExpanded; }
-	void ResetNodeCount() { nodesExpanded = nodesTouched = 0; uniqueNodesExpanded = 0; }
+	void ResetNodeCount() { nodesExpanded = nodesTouched = 0; uniqueNodesExpanded = 0; nodesExplored = 0; nodesExploredPending = 0; }
 	int GetMemoryUsage();
 	
 	bool GetClosedListGCost(const state &val, double &gCost) const;
@@ -115,8 +115,10 @@ public:
 	void SetConstraint(Constraint<state> *c) { theConstraint = c; }
 
 	uint64_t GetNodesExpanded() const { return nodesExpanded; }
+	uint64_t GetNodesExplored() const { return nodesExplored; }
 	uint64_t GetNodesTouched() const { return nodesTouched; }
 	uint64_t GetNecessaryExpansions() const;
+	uint64_t GetNecessaryExpansions2() const;
 	void LogFinalStats(StatCollection *) {}
 	
 	void SetStopAfterGoal(bool val) { stopAfterGoal = val; }
@@ -132,7 +134,13 @@ public:
 	void SetWeight(double w) {weight = w;}
 private:
 	uint64_t nodesTouched, nodesExpanded;
-	
+	uint64_t nodesExplored;
+	uint64_t nodesExploredPending;
+
+	//the id of the states with maximum priority during the search
+	uint64_t maxPrID;
+	uint64_t goalID;
+
 	std::vector<state> neighbors;
 	std::vector<uint64_t> neighborID;
 	std::vector<double> edgeCosts;
@@ -159,8 +167,8 @@ private:
  * @return The name of the algorithm
  */
 
-template <class state, class action, class environment, class openList>
-const char *TemplateAStar<state,action,environment,openList>::GetName()
+template <class state, class action, class environment, class openList, class CmpKey>
+const char *TemplateAStar<state,action,environment,openList, CmpKey>::GetName()
 {
 	static char name[32];
 	sprintf(name, "TemplateAStar[]");
@@ -178,8 +186,8 @@ const char *TemplateAStar<state,action,environment,openList>::GetName()
  * @param thePath A vector of states which will contain an optimal path 
  * between from and to when the function returns, if one exists. 
  */
-template <class state, class action, class environment, class openList>
-void TemplateAStar<state,action,environment,openList>::GetPath(environment *_env, const state& from, const state& to, std::vector<state> &thePath)
+template <class state, class action, class environment, class openList, class CmpKey>
+void TemplateAStar<state,action,environment,openList,CmpKey>::GetPath(environment *_env, const state& from, const state& to, std::vector<state> &thePath)
 {
 	//discardcount=0;
   	if (!InitializeSearch(_env, from, to, thePath))
@@ -193,8 +201,8 @@ void TemplateAStar<state,action,environment,openList>::GetPath(environment *_env
 	}
 }
 
-template <class state, class action, class environment, class openList>
-void TemplateAStar<state,action,environment,openList>::GetPath(environment *_env, const state& from, const state& to, std::vector<action> &path)
+template <class state, class action, class environment, class openList, class CmpKey>
+void TemplateAStar<state,action,environment,openList,CmpKey>::GetPath(environment *_env, const state& from, const state& to, std::vector<action> &path)
 {
 	std::vector<state> thePath;
 	if (!InitializeSearch(_env, from, to, thePath))
@@ -222,8 +230,8 @@ void TemplateAStar<state,action,environment,openList>::GetPath(environment *_env
  * @param to The goal state
  * @return TRUE if initialization was successful, FALSE otherwise
  */
-template <class state, class action, class environment, class openList>
-bool TemplateAStar<state,action,environment,openList>::InitializeSearch(environment *_env, const state& from, const state& to, std::vector<state> &thePath)
+template <class state, class action, class environment, class openList, class CmpKey>
+bool TemplateAStar<state,action,environment,openList,CmpKey>::InitializeSearch(environment *_env, const state& from, const state& to, std::vector<state> &thePath)
 {
 	if (theHeuristic == 0)
 		theHeuristic = _env;
@@ -249,8 +257,8 @@ bool TemplateAStar<state,action,environment,openList>::InitializeSearch(environm
  * @author Nathan Sturtevant
  * @date 01/06/08
  */
-template <class state, class action, class environment, class openList>
-void TemplateAStar<state,action,environment,openList>::AddAdditionalStartState(state& newState)
+template <class state, class action, class environment, class openList, class CmpKey>
+void TemplateAStar<state,action,environment,openList,CmpKey>::AddAdditionalStartState(state& newState)
 {
 	openClosedList.AddOpenNode(newState, env->GetStateHash(newState), 0, weight*theHeuristic->HCost(start, goal));
 }
@@ -260,8 +268,8 @@ void TemplateAStar<state,action,environment,openList>::AddAdditionalStartState(s
  * @author Nathan Sturtevant
  * @date 09/25/10
  */
-template <class state, class action, class environment, class openList>
-void TemplateAStar<state,action,environment,openList>::AddAdditionalStartState(state& newState, double cost)
+template <class state, class action, class environment, class openList, class CmpKey>
+void TemplateAStar<state,action,environment,openList,CmpKey>::AddAdditionalStartState(state& newState, double cost)
 {
 	openClosedList.AddOpenNode(newState, env->GetStateHash(newState), cost, weight*theHeuristic->HCost(start, goal));
 }
@@ -276,8 +284,8 @@ void TemplateAStar<state,action,environment,openList>::AddAdditionalStartState(s
  * @return TRUE if there is no path or if we have found the goal, FALSE
  * otherwise
  */
-template <class state, class action, class environment, class openList>
-bool TemplateAStar<state,action,environment,openList>::DoSingleSearchStep(std::vector<state> &thePath)
+template <class state, class action, class environment, class openList, class CmpKey>
+bool TemplateAStar<state,action,environment,openList,CmpKey>::DoSingleSearchStep(std::vector<state> &thePath)
 {
 	if (openClosedList.OpenSize() == 0)
 	{
@@ -294,11 +302,37 @@ bool TemplateAStar<state,action,environment,openList>::DoSingleSearchStep(std::v
 		uniqueNodesExpanded++;
 	nodesExpanded++;
 
+	//test if the state expanded is start
+	if (nodesExpanded == 1)
+	{
+		nodesExplored = 0;
+		nodesExploredPending = 1;
+		maxPrID = nodeid;
+	}
+	else
+	{
+		CmpKey compare;
+		//if the priortiy of current node is greater or equal to previous max one,
+		//count as an exploring expansion
+		if (compare(openClosedList.Lookat(nodeid), openClosedList.Lookat(maxPrID)))
+		{
+			nodesExplored = nodesExplored + nodesExploredPending;
+			nodesExploredPending = 1;
+			maxPrID = nodeid;
+		}
+			
+		//if the priortiy of current node is less than previous max one,
+		//we are not sure whether it is "necessary", add it to pending
+		else
+			nodesExploredPending++;
+	}
+
 	if ((stopAfterGoal) && (env->GoalTest(openClosedList.Lookup(nodeid).data, goal)))
 	{
 		ExtractPathToStartFromID(nodeid, thePath);
 		// Path is backwards - reverse
 		reverse(thePath.begin(), thePath.end()); 
+		goalID = nodeid;
 		goalFCost = openClosedList.Lookup(nodeid).g + openClosedList.Lookup(nodeid).h;
 		return true;
 	}
@@ -450,8 +484,8 @@ bool TemplateAStar<state,action,environment,openList>::DoSingleSearchStep(std::v
  * 
  * @return The first state in the open list. 
  */
-template <class state, class action, class environment, class openList>
-state TemplateAStar<state, action,environment,openList>::CheckNextNode()
+template <class state, class action, class environment, class openList, class CmpKey>
+state TemplateAStar<state, action,environment,openList,CmpKey>::CheckNextNode()
 {
 	uint64_t key = openClosedList.Peek();
 	return openClosedList.Lookup(key).data;
@@ -466,8 +500,8 @@ state TemplateAStar<state, action,environment,openList>::CheckNextNode()
  * 
  * @return The first state in the open list. 
  */
-template <class state, class action, class environment, class openList>
-void TemplateAStar<state, action,environment,openList>::FullBPMX(uint64_t nodeID, int distance)
+template <class state, class action, class environment, class openList, class CmpKey>
+void TemplateAStar<state, action,environment,openList,CmpKey>::FullBPMX(uint64_t nodeID, int distance)
 {
 	if (distance <= 0)
 		return;
@@ -517,8 +551,8 @@ void TemplateAStar<state, action,environment,openList>::FullBPMX(uint64_t nodeID
  * @param goalNode the goal state
  * @param thePath will contain the path from goalNode to the start state
  */
-template <class state, class action,class environment,class openList>
-void TemplateAStar<state, action,environment,openList>::ExtractPathToStartFromID(uint64_t node,
+template <class state, class action,class environment,class openList, class CmpKey>
+void TemplateAStar<state, action,environment,openList,CmpKey>::ExtractPathToStartFromID(uint64_t node,
 																	 std::vector<state> &thePath)
 {
 	do {
@@ -528,8 +562,8 @@ void TemplateAStar<state, action,environment,openList>::ExtractPathToStartFromID
 	thePath.push_back(openClosedList.Lookup(node).data);
 }
 
-template <class state, class action,class environment,class openList>
-const state &TemplateAStar<state, action,environment,openList>::GetParent(const state &s)
+template <class state, class action,class environment,class openList, class CmpKey>
+const state &TemplateAStar<state, action,environment,openList,CmpKey>::GetParent(const state &s)
 {
 	uint64_t theID;
 	openClosedList.Lookup(env->GetStateHash(s), theID);
@@ -537,14 +571,29 @@ const state &TemplateAStar<state, action,environment,openList>::GetParent(const 
 	return openClosedList.Lookup(theID).data;
 }
 
-template <class state, class action, class environment, class openList>
-uint64_t TemplateAStar<state, action,environment,openList>::GetNecessaryExpansions() const
+template <class state, class action, class environment, class openList, class CmpKey>
+uint64_t TemplateAStar<state, action,environment,openList,CmpKey>::GetNecessaryExpansions() const
 {
 	uint64_t n = 0;
 	for (unsigned int x = 0; x < openClosedList.size(); x++)
 	{
 		const auto &data = openClosedList.Lookat(x);
 		if (fless(data.g + data.h, goalFCost))
+			n++;
+	}
+	return n;
+}
+
+template <class state, class action, class environment, class openList, class CmpKey>
+uint64_t TemplateAStar<state, action, environment, openList, CmpKey>::GetNecessaryExpansions2() const
+{
+	uint64_t n = 0;
+
+	for (unsigned int x = 0; x < openClosedList.size(); x++)
+	{
+		const auto &data = openClosedList.Lookat(x);
+		CmpKey compare;
+		if (!compare(data, openClosedList.Lookat(goalID)))
 			n++;
 	}
 	return n;
@@ -557,8 +606,8 @@ uint64_t TemplateAStar<state, action,environment,openList>::GetNecessaryExpansio
  * @author Nathan Sturtevant
  * @date 03/22/06
  */
-template <class state, class action, class environment, class openList>
-void TemplateAStar<state, action,environment,openList>::PrintStats()
+template <class state, class action, class environment, class openList, class CmpKey>
+void TemplateAStar<state, action,environment,openList,CmpKey>::PrintStats()
 {
 	printf("%u items in closed list\n", (unsigned int)openClosedList.ClosedSize());
 	printf("%u items in open queue\n", (unsigned int)openClosedList.OpenSize());
@@ -571,8 +620,8 @@ void TemplateAStar<state, action,environment,openList>::PrintStats()
  * 
  * @return The combined number of elements in the closed list and open queue
  */
-template <class state, class action, class environment, class openList>
-int TemplateAStar<state, action,environment,openList>::GetMemoryUsage()
+template <class state, class action, class environment, class openList, class CmpKey>
+int TemplateAStar<state, action,environment,openList,CmpKey>::GetMemoryUsage()
 {
 	return openClosedList.size();
 }
@@ -587,8 +636,8 @@ int TemplateAStar<state, action,environment,openList>::GetMemoryUsage()
  * @return success Whether we found the value or not
  * the states
  */
-template <class state, class action, class environment, class openList>
-bool TemplateAStar<state, action,environment,openList>::GetClosedListGCost(const state &val, double &gCost) const
+template <class state, class action, class environment, class openList, class CmpKey>
+bool TemplateAStar<state, action,environment,openList,CmpKey>::GetClosedListGCost(const state &val, double &gCost) const
 {
 	uint64_t theID;
 	dataLocation loc = openClosedList.Lookup(env->GetStateHash(val), theID);
@@ -600,8 +649,8 @@ bool TemplateAStar<state, action,environment,openList>::GetClosedListGCost(const
 	return false;
 }
 
-template <class state, class action, class environment, class openList>
-bool TemplateAStar<state, action,environment,openList>::GetOpenListGCost(const state &val, double &gCost) const
+template <class state, class action, class environment, class openList, class CmpKey>
+bool TemplateAStar<state, action,environment,openList,CmpKey>::GetOpenListGCost(const state &val, double &gCost) const
 {
 	uint64_t theID;
 	dataLocation loc = openClosedList.Lookup(env->GetStateHash(val), theID);
@@ -613,8 +662,8 @@ bool TemplateAStar<state, action,environment,openList>::GetOpenListGCost(const s
 	return false;
 }
 
-template <class state, class action, class environment, class openList>
-bool TemplateAStar<state, action,environment,openList>::GetClosedItem(const state &s, AStarOpenClosedData<state> &result)
+template <class state, class action, class environment, class openList, class CmpKey>
+bool TemplateAStar<state, action,environment,openList,CmpKey>::GetClosedItem(const state &s, AStarOpenClosedData<state> &result)
 {
 	uint64_t theID;
 	dataLocation loc = openClosedList.Lookup(env->GetStateHash(s), theID);
@@ -634,8 +683,8 @@ bool TemplateAStar<state, action,environment,openList>::GetClosedItem(const stat
  * @date 03/12/09
  * 
  */
-template <class state, class action, class environment, class openList>
-void TemplateAStar<state, action,environment,openList>::OpenGLDraw() const
+template <class state, class action, class environment, class openList, class CmpKey>
+void TemplateAStar<state, action,environment,openList,CmpKey>::OpenGLDraw() const
 {
 	double transparency = 1.0;
 	if (openClosedList.size() == 0)
@@ -703,8 +752,8 @@ void TemplateAStar<state, action,environment,openList>::OpenGLDraw() const
  * @date 7/12/16
  *
  */
-template <class state, class action, class environment, class openList>
-void TemplateAStar<state, action,environment,openList>::Draw(Graphics::Display &disp) const
+template <class state, class action, class environment, class openList, class CmpKey>
+void TemplateAStar<state, action,environment,openList,CmpKey>::Draw(Graphics::Display &disp) const
 {
 	double transparency = 1.0;
 	if (openClosedList.size() == 0)
@@ -757,8 +806,8 @@ void TemplateAStar<state, action,environment,openList>::Draw(Graphics::Display &
 	env->Draw(disp, goal);
 }
 
-template <class state, class action, class environment, class openList>
-std::string TemplateAStar<state, action,environment,openList>::SVGDraw() const
+template <class state, class action, class environment, class openList, class CmpKey>
+std::string TemplateAStar<state, action,environment,openList,CmpKey>::SVGDraw() const
 {
 	std::string s;
 	double transparency = 1.0;
@@ -803,8 +852,8 @@ std::string TemplateAStar<state, action,environment,openList>::SVGDraw() const
 	return s;
 }
 
-template <class state, class action, class environment, class openList>
-std::string TemplateAStar<state, action,environment,openList>::SVGDrawDetailed() const
+template <class state, class action, class environment, class openList, class CmpKey>
+std::string TemplateAStar<state, action,environment,openList,CmpKey>::SVGDrawDetailed() const
 {
 	std::string s;
 	//double transparency = 1.0;
