@@ -27,7 +27,7 @@ void TestPancakeHard(int gap = 0);
 void TestRob();
 void TestVariants();
 void TestError();
-void TestPancakeHeavy();
+void TestPancakeHeavy(int alg);
 
 template <class state>
 class GAPIncludeKHeuristic : public Heuristic<state> {
@@ -39,9 +39,9 @@ public:
 	Heuristic<state> *h2;
 };
 
-void TestPancake()
+void TestPancake(int alg)
 {
-	TestPancakeHeavy();
+	TestPancakeHeavy(alg);
 //	TestRob();
 //	TestPancakeRandom();
 
@@ -53,7 +53,7 @@ void TestPancake()
 	exit(0);
 }
 const int N = 12;
-void TestPancakeHeavy()
+void TestPancakeHeavy(int alg)
 {
 	for (int gap = 0; gap < 1; gap++)
 	{
@@ -82,7 +82,7 @@ void TestPancakeHeavy()
 			std::cout << original << "\n";
 
 			// WA*
-			if (1)
+			if(alg==0 || alg ==1)
 			{
 				TemplateAStar<PancakePuzzleState<N>, PancakePuzzleAction, HeavyPancakePuzzle<N>> wastar;
 				wastar.SetWeight(n_weight);
@@ -90,38 +90,38 @@ void TestPancakeHeavy()
 				t1.StartTimer();
 				wastar.GetPath(&pancake, start, goal, wastarPath);
 				t1.EndTimer();
-				printf("WA* found path length %1.0f; %llu expanded; %1.2fs elapsed\n", pancake.GetPathLength(wastarPath),
-					wastar.GetNodesExpanded(), t1.GetElapsedTime());
+				printf("WA* found cost/total_exp/exam_exp/nece_exp/time \t%1.0f\t %llu\t %llu\t %llu\t %1.2f\n", pancake.GetPathLength(wastarPath),
+					wastar.GetNodesExpanded(), wastar.GetNodesExplored(), wastar.GetNecessaryExpansions2(), t1.GetElapsedTime());
 			}
 
 			// curve1
-			if (1)
+			if (alg==0 || alg==2)
 			{
 				TemplateAStar<PancakePuzzleState<N>, PancakePuzzleAction, HeavyPancakePuzzle<N>, 
-					AStarOpenClosed<PancakePuzzleState<N>, QuadraticCompare1<PancakePuzzleState<N>>>> c1;
+					AStarOpenClosed<PancakePuzzleState<N>, QuadraticCompare1<PancakePuzzleState<N>>>, QuadraticCompare1<PancakePuzzleState<N>>> c1;
 				
 				goal.Reset();
 				start = original;
 				t2.StartTimer();
 				c1.GetPath(&pancake, start, goal, c1Path);
 				t2.EndTimer();
-				printf("Curve1 found path length %1.0f; %llu expanded; %1.2fs elapsed\n", pancake.GetPathLength(c1Path),
-					c1.GetNodesExpanded(),  t2.GetElapsedTime());
+				printf("Curve1 found cost/total_exp/exam_exp/nece_exp/time \t%1.0f\t %llu\t %llu\t %llu\t %1.2f\n", pancake.GetPathLength(c1Path),
+					c1.GetNodesExpanded(), c1.GetNodesExplored(), c1.GetNecessaryExpansions2(), t2.GetElapsedTime());
 			}
 
 			// curve2
-			if (1)
+			if (alg==0||alg==3)
 			{
 				TemplateAStar<PancakePuzzleState<N>, PancakePuzzleAction, HeavyPancakePuzzle<N>,
-					AStarOpenClosed<PancakePuzzleState<N>, QuadraticCompare2<PancakePuzzleState<N>> >> c2;
+					AStarOpenClosed<PancakePuzzleState<N>, QuadraticCompare2<PancakePuzzleState<N>>>, QuadraticCompare2<PancakePuzzleState<N>>> c2;
 
 				goal.Reset();
 				start = original;
 				t3.StartTimer();
 				c2.GetPath(&pancake, start, goal, c2Path);
 				t3.EndTimer();
-				printf("Curve2 found path length %1.0f; %llu expanded; %1.2fs elapsed\n", pancake.GetPathLength(c2Path),
-					c2.GetNodesExpanded(), t3.GetElapsedTime());
+				printf("Curve2 found cost/total_exp/exam_exp/nece_exp/time \t%1.0f\t %llu\t %llu\t %llu\t %1.2f\n", pancake.GetPathLength(c2Path),
+					c2.GetNodesExpanded(), c2.GetNodesExplored(), c2.GetNecessaryExpansions2(), t3.GetElapsedTime());
 			}
 		}
 	}

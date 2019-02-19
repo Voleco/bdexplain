@@ -6,7 +6,7 @@
 #include "AStarOpenClosed.h"
 #include <cmath>
 
-const double n_weight = 1.25;
+const double n_weight = 3;
 const double n_PI = 3.1415927;
 const double additive_bound_K = 10;
 

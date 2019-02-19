@@ -56,8 +56,8 @@ void TestSTP(int algorithm, int weightType,int low, int high,int reopen)
 	MM<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4,4>> mm;
 	BSStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4,4>> bs;
 	TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4,4>> astar;
-	TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>, AStarOpenClosed<MNPuzzleState<4, 4>, QuadraticCompare1<MNPuzzleState<4, 4>>>> gf;
-	TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>, AStarOpenClosed<MNPuzzleState<4, 4>, QuadraticCompare2<MNPuzzleState<4, 4>>>> gf2;
+	TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>, AStarOpenClosed<MNPuzzleState<4, 4>, QuadraticCompare1<MNPuzzleState<4, 4>>>, QuadraticCompare1<MNPuzzleState<4, 4>>> gf;
+	TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>, AStarOpenClosed<MNPuzzleState<4, 4>, QuadraticCompare2<MNPuzzleState<4, 4>>>, QuadraticCompare2<MNPuzzleState<4, 4>>> gf2;
 	
 	if (reopen != 0)
 	{
@@ -130,20 +130,20 @@ void TestSTP(int algorithm, int weightType,int low, int high,int reopen)
 			astar.SetWeight(n_weight);
 			astar.GetPath(&mnp, start, goal, astarPath);
 			t1.EndTimer();
-			printf("WA*/gf1/gf2 found path length/expanded/time \t%1.0f \t%llu \t%1.2f", mnp.GetPathLength(astarPath),
-				   astar.GetNodesExpanded(), t1.GetElapsedTime());
+			printf("WA*/gf1/gf2 found cost/Total_exp/Exam_exp/Nece_exp/time \t%1.0f \t%llu \t%llu \t%llu  \t%1.2f", mnp.GetPathLength(astarPath),
+				   astar.GetNodesExpanded(), astar.GetNodesExplored(), astar.GetNecessaryExpansions2(), t1.GetElapsedTime());
 			t1.StartTimer();
 			gf.SetHeuristic(&mnp);
 			gf.GetPath(&mnp, start, goal, gfPath);
 			t1.EndTimer();
-			printf(" \t%1.0f \t%llu \t%1.2f", mnp.GetPathLength(gfPath),
-				gf.GetNodesExpanded(), t1.GetElapsedTime());
+			printf(" \t%1.0f \t%llu \t%llu \t%llu  \t%1.2f", mnp.GetPathLength(gfPath),
+				gf.GetNodesExpanded(), gf.GetNodesExplored(), gf.GetNecessaryExpansions2(), t1.GetElapsedTime());
 			t1.StartTimer();
 			gf2.SetHeuristic(&mnp);
 			gf2.GetPath(&mnp, start, goal, gf2Path);
 			t1.EndTimer();
-			printf(" \t%1.0f \t%llu \t%1.2f\n", mnp.GetPathLength(gf2Path),
-				gf2.GetNodesExpanded(), t1.GetElapsedTime());
+			printf(" \t%1.0f \t%llu \t%llu \t%llu  \t%1.2f\n", mnp.GetPathLength(gf2Path),
+				gf2.GetNodesExpanded(), gf2.GetNodesExplored(), gf2.GetNecessaryExpansions2(), t1.GetElapsedTime());
 		}
 		//if (algorithm == 1) // BS*
 		//{
