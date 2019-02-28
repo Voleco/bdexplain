@@ -55,6 +55,7 @@ public:
 	state data;
 	double g;
 	double h;
+	double f;
 	uint64_t parentID;
 	uint64_t openLocation;
 	bool reopened;
