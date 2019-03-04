@@ -43,6 +43,7 @@
 #include "BidirPancake.h"
 #include "BidirTOH.h"
 #include "BidirTS.h"
+#include "SubTest.h"
 
 void Test100Easy();
 void Animate();
@@ -112,7 +113,9 @@ int main(int argc, char* argv[])
 	InstallCommandLineHandler(MyCLHandler, "-ts", "-ts", "NBS test on TopSpin");
 	InstallCommandLineHandler(MyCLHandler, "-toh", "-toh", "NBS test on TOH");
 	InstallCommandLineHandler(MyCLHandler, "-gf", "-gf <scenario> [weight] [reopen]", "greedy focal");
+	InstallCommandLineHandler(MyCLHandler, "-sub", "-sub <scenario> [weight] [reopen]", "sub");
 	InstallCommandLineHandler(MyCLHandler, "-animate", "-animate", "Build animation");
+
 	//const char *map, const char *scenario, double weight
 	InstallCommandLineHandler(MyCLHandler, "-heuristic", "-heuristic <dir> <1997/888/8210/none>", "Load the given heuristic");
 	InstallCommandLineHandler(MyCLHandler, "-problem", "-problem which", "Load the given problem");
@@ -419,6 +422,19 @@ int MyCLHandler(char *argument[], int maxNumArgs)
 		AnalyzeGreedy(argument[1], weight,reopen);
 		return 3;
 	}
+
+	else if (maxNumArgs > 1 && strcmp(argument[0], "-sub") == 0)
+	{
+		double weight = 1.0;
+		if (maxNumArgs > 2)
+			weight = atof(argument[2]);
+		int reopen = 0;
+		if (maxNumArgs > 3)
+			reopen = atoi(argument[3]);
+		TestSub1(argument[1], weight, reopen);
+		return 3;
+	}
+
 	else if (maxNumArgs > 2 && strcmp(argument[0], "-testPruning") == 0)
 	{
 		TestPruning(atoi(argument[1]), atoi(argument[2]));

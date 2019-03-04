@@ -65,5 +65,6 @@ SRC_CPP = \
 	apps/bidirectional/BidirTOH.cpp \
 	apps/bidirectional/BidirTS.cpp \
 	apps/bidirectional/BidirPancake.cpp \
+	apps/bidirectional/SubTest.cpp \
 	apps/bidirectional/MMRubik.cpp \
 	apps/bidirectional/MM0Rubik.cpp \
