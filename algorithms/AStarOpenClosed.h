@@ -50,8 +50,8 @@ template<typename state>
 class AStarOpenClosedData {
 public:
 	AStarOpenClosedData() {}
-	AStarOpenClosedData(const state &theData, double gCost, double hCost, double fCost, uint64_t parent, uint64_t openLoc, dataLocation location)
-	:data(theData), g(gCost), h(hCost), f(fCost), parentID(parent), openLocation(openLoc), where(location) { reopened = false; }
+	AStarOpenClosedData(const state &theData, double gCost, double hCost, double fCost, bool onSP, uint64_t parent, uint64_t openLoc, dataLocation location)
+	:data(theData), g(gCost), h(hCost), f(fCost),onSolutionPath(onSP), parentID(parent), openLocation(openLoc), where(location) { reopened = false; }
 	state data;
 	double g;
 	double h;
@@ -59,6 +59,7 @@ public:
 	uint64_t parentID;
 	uint64_t openLocation;
 	bool reopened;
+	bool onSolutionPath;
 	dataLocation where;
 };
 
@@ -68,8 +69,8 @@ public:
 	AStarOpenClosed();
 	~AStarOpenClosed();
 	void Reset(int val=0);
-	uint64_t AddOpenNode(const state &val, uint64_t hash, double g, double h, double f=0, uint64_t parent=kTAStarNoNode);
-	uint64_t AddClosedNode(state &val, uint64_t hash, double g, double h, double f=0, uint64_t parent=kTAStarNoNode);
+	uint64_t AddOpenNode(const state &val, uint64_t hash, double g, double h, double f=0,  uint64_t parent=kTAStarNoNode , bool onSP = false);
+	uint64_t AddClosedNode(state &val, uint64_t hash, double g, double h, double f=0,  uint64_t parent=kTAStarNoNode ,bool onSP = false);
 	void KeyChanged(uint64_t objKey);
 	//void IncreaseKey(uint64_t objKey);
 	dataLocation Lookup(uint64_t hashKey, uint64_t &objKey) const;
@@ -123,7 +124,7 @@ void AStarOpenClosed<state, CmpKey, dataStructure>::Reset(int)
  * Add object into open list.
  */
 template<typename state, typename CmpKey, class dataStructure>
-uint64_t AStarOpenClosed<state, CmpKey, dataStructure>::AddOpenNode(const state &val, uint64_t hash, double g, double h, double f, uint64_t parent)
+uint64_t AStarOpenClosed<state, CmpKey, dataStructure>::AddOpenNode(const state &val, uint64_t hash, double g, double h, double f, uint64_t parent, bool onSP )
 {
 	// should do lookup here...
 	if (table.find(hash) != table.end())
@@ -131,7 +132,7 @@ uint64_t AStarOpenClosed<state, CmpKey, dataStructure>::AddOpenNode(const state 
 		//return -1; // TODO: find correct id and return
 		assert(false);
 	}
-	elements.push_back(dataStructure(val, g, h,f, parent, theHeap.size(), kOpenList));
+	elements.push_back(dataStructure(val, g, h,f,onSP, parent, theHeap.size(), kOpenList));
 	if (parent == kTAStarNoNode)
 		elements.back().parentID = elements.size()-1;
 	table[hash] = elements.size()-1; // hashing to element list location
@@ -144,11 +145,11 @@ uint64_t AStarOpenClosed<state, CmpKey, dataStructure>::AddOpenNode(const state 
  * Add object into closed list.
  */
 template<typename state, typename CmpKey, class dataStructure>
-uint64_t AStarOpenClosed<state, CmpKey, dataStructure>::AddClosedNode(state &val, uint64_t hash, double g, double h,double f, uint64_t parent)
+uint64_t AStarOpenClosed<state, CmpKey, dataStructure>::AddClosedNode(state &val, uint64_t hash, double g, double h,double f, uint64_t parent, bool onSP )
 {
 	// should do lookup here...
 	assert(table.find(hash) == table.end());
-	elements.push_back(dataStructure(val, g, h,f, parent, 0, kClosedList));
+	elements.push_back(dataStructure(val, g, h,f,onSP, parent, 0, kClosedList));
 	if (parent == kTAStarNoNode)
 		elements.back().parentID = elements.size()-1;
 	table[hash] = elements.size()-1; // hashing to element list location

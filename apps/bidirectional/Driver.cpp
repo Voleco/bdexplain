@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 	InstallCommandLineHandler(MyCLHandler, "-ts", "-ts", "NBS test on TopSpin");
 	InstallCommandLineHandler(MyCLHandler, "-toh", "-toh", "NBS test on TOH");
 	InstallCommandLineHandler(MyCLHandler, "-gf", "-gf <scenario> [weight] [reopen]", "greedy focal");
-	InstallCommandLineHandler(MyCLHandler, "-sub", "-sub <scenario> [weight] [reopen]", "sub");
+	InstallCommandLineHandler(MyCLHandler, "-sub", "-sub <scenario> [phi_type] [weight] [reopen]", "sub");
 	InstallCommandLineHandler(MyCLHandler, "-animate", "-animate", "Build animation");
 
 	//const char *map, const char *scenario, double weight
@@ -396,12 +396,12 @@ int MyCLHandler(char *argument[], int maxNumArgs)
 			low = atoi(argument[3]);
 			high = atoi(argument[4]);
 		}
-		int reopen = 0;
+		double wt = 1;
 		if (maxNumArgs > 5)
 		{
-			reopen = atoi(argument[5]);
+			wt = atof(argument[5]);
 		}
-		TestSTP(atoi(argument[1]), atoi(argument[2]),low, high,reopen);
+		TestSTP(atoi(argument[1]), atoi(argument[2]),low, high,wt);
 	}
 	else if (maxNumArgs > 2 && strcmp(argument[0], "-nbs") == 0)
 	{
@@ -428,10 +428,13 @@ int MyCLHandler(char *argument[], int maxNumArgs)
 		double weight = 1.0;
 		if (maxNumArgs > 2)
 			weight = atof(argument[2]);
-		int reopen = 0;
+		int phi_type = 0;
 		if (maxNumArgs > 3)
-			reopen = atoi(argument[3]);
-		TestSub1(argument[1], weight, reopen);
+			phi_type = atoi(argument[3]);
+		int reopen = 0;
+		if (maxNumArgs > 4)
+			reopen = atoi(argument[4]);
+		TestSub1(argument[1], weight, phi_type, reopen);
 		return 3;
 	}
 

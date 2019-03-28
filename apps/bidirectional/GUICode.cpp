@@ -24,6 +24,8 @@
 #include "WeightedVertexGraph.h"
 #include "Timer.h"
 #include "NonlinearWeightedAStar.h"
+#include "MyAStar.h"
+#include "MyOptimisticSearch.h"
 
 Map *map = 0;
 MapEnvironment *me = 0;
@@ -53,14 +55,15 @@ MM<xyLoc, tDirection, MapEnvironment> mm;
 TemplateAStar<xyLoc, tDirection, MapEnvironment> nbs;
 //TemplateAStar<xyLoc, tDirection, MapEnvironment> compare;
 //TemplateAStar<xyLoc, tDirection, MapEnvironment, AStarOpenClosed<xyLoc, QuadraticCompare2<xyLoc>>> ff;
-
-TemplateAStar<xyLoc, tDirection, MapEnvironment, AStarOpenClosed<xyLoc, RickCompare<xyLoc>>> compare;
+MyOptimisticSearch<xyLoc, tDirection, MapEnvironment> compare(Phi_WA);
+//TemplateAStar<xyLoc, tDirection, MapEnvironment, AStarOpenClosed<xyLoc, RickCompare<xyLoc>>> compare;
 TemplateAStar<xyLoc, tDirection, MapEnvironment, AStarOpenClosed<xyLoc, LinearCompare<xyLoc>>> ff;
 
 MM<xyLoc, tDirection, MapEnvironment> mm0;
 TemplateAStar<xyLoc, tDirection, MapEnvironment> compare0;
 BSStar<xyLoc, tDirection, MapEnvironment> bs;
 
+bool OSSearchRunning = false;
 bool mmSearchRunning = false;
 bool compareSearchRunning = false;
 bool mm0SearchRunning = false;
@@ -163,7 +166,9 @@ void MyWindowHandler(unsigned long windowID, tWindowEventType eType)
 		me = new MapEnvironment(map);
 		me->SetDiagonalCost(1.5);
 		w = new WeightedHeuristic<xyLoc>(me, 1.0);
-		//compare.SetWeight(2.0);
+		nbs.SetWeight(2.0);
+		compare.SetWeight(4.0);
+		compare.SetOptimalityBound(2.0);
 	}
 	
 }
@@ -213,7 +218,9 @@ void StepAlgorithms()
 			compareSearchRunning = !compare.DoSingleSearchStep(path1);
 			if (!compareSearchRunning)
 			{
-				printf("WA*: %llu nodes expanded cost %1.1f\n", compare.GetNodesExpanded(), me->GetPathLength(path1));
+				printf("compare: %llu nodes expanded cost %1.1f\n", compare.GetNodesExpanded(), me->GetPathLength(path1));
+				std::cout << "maxFCost: " << compare.GetMaxFCost() << "\t"
+					<< "firstSolutionCost: " <<compare.GetFirstSolutionCost() << "\n";
 			}
 		}
 	}
@@ -449,7 +456,10 @@ bool MyClickHandler(unsigned long windowID, int, int, point3d loc, tButtonType b
 				int x, y;
 				map->GetPointFromCoordinate(loc, x, y);
 				goal.x = x; goal.y = y;
-
+				start.x = 71;
+				start.y = 135;
+				goal.x = 31;
+				goal.y = 13;
 				//100, 59) to (176, 112
 //				start.x = 100;
 //				start.y = 59;

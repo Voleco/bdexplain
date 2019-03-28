@@ -5,6 +5,6 @@
 
 #include <stdio.h>
 
-void TestSub1(const char *scenario, double wt, int reopen);
+void TestSub1(const char *scenario, double wt, int phi_type, int reopen);
 
 #endif /*SubTest_hpp */
