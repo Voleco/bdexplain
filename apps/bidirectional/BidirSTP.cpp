@@ -281,7 +281,7 @@ void TestSTP(int algorithm, int weightType, int low, int high, double wt)
 						<< OS.GetUniqueNodesExpanded() << "\t"
 						<< OS.GetMaxFCost() << "\t"
 						<< OS.GetFirstSolutionCost() << "\t"
-						<< me->GetPathLength(OSPath) << "\t"
+						<< mnp.GetPathLength(OSPath) << "\t"
 						<< "\n";
 				}
 
