@@ -249,7 +249,7 @@ void TestSTP(int algorithm, int weightType, int low, int high, double wt)
 				if (j == 1)
 					OS.SetPhi(Phi_XDP);
 
-				if (phi_type == 2)
+				if (j == 2)
 					OS.SetPhi(Phi_XUP);
 				for (int i = 0; i < 3; i++)
 				{
@@ -272,8 +272,8 @@ void TestSTP(int algorithm, int weightType, int low, int high, double wt)
 						OS.SetEnhancement2(false);
 						OS.SetReopenStage1(false);
 					}
-					OS.InitializeSearch(me, start, goal, OSPath);
-					OS.GetPath(me, start, goal, OSPath);
+					OS.InitializeSearch(&mnp, start, goal, OSPath);
+					OS.GetPath(&mnp, start, goal, OSPath);
 
 					std::cout << "i,j" << i << j << "\n";
 					std::cout << "nodes:" << i << "\t"
