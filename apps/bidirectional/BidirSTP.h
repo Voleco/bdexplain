@@ -11,6 +11,6 @@
 
 #include <stdio.h>
 
-void TestSTP(int algorithm, int weightType,int low, int high,int reopen=0);
+void TestSTP(int algorithm, int weightType,int low, int high,double weight =1.0);
 
 #endif /* BidirSTP_hpp */

@@ -163,7 +163,8 @@ public:
 	void Draw(Graphics::Display &disp) const;
 	std::string SVGDraw() const;
 	std::string SVGDrawDetailed() const;
-	
+
+	void SetPhi(PhiFunc phi) { Phi_function = phi; }
 	void SetWeight(double w) {weight = w;}
 private:
 	uint64_t nodesTouched, nodesExpanded;
@@ -282,8 +283,8 @@ bool MyAStar<state,action,environment,openList>::InitializeSearch(environment *_
 	{
 		return false;
 	}
-	
-	openClosedList.AddOpenNode(start, env->GetStateHash(start), 0, theHeuristic->HCost(start, goal));
+	double fcost = Phi_function(theHeuristic->HCost(start, goal), 0, weight);
+	openClosedList.AddOpenNode(start, env->GetStateHash(start), 0, theHeuristic->HCost(start, goal), fcost);
 	
 	return true;
 }
@@ -296,7 +297,8 @@ bool MyAStar<state,action,environment,openList>::InitializeSearch(environment *_
 template <class state, class action, class environment, class openList>
 void MyAStar<state,action,environment,openList>::AddAdditionalStartState(state& newState)
 {
-	openClosedList.AddOpenNode(newState, env->GetStateHash(newState), 0, theHeuristic->HCost(start, goal));
+	double fcost = Phi_function(theHeuristic->HCost(newState, goal), 0, weight);
+	openClosedList.AddOpenNode(newState, env->GetStateHash(newState), 0, theHeuristic->HCost(newState, goal),fcost);
 }
 
 /**
@@ -307,7 +309,8 @@ void MyAStar<state,action,environment,openList>::AddAdditionalStartState(state& 
 template <class state, class action, class environment, class openList>
 void MyAStar<state,action,environment,openList>::AddAdditionalStartState(state& newState, double cost)
 {
-	openClosedList.AddOpenNode(newState, env->GetStateHash(newState), cost, theHeuristic->HCost(start, goal));
+	double fcost = Phi_function(theHeuristic->HCost(newState, goal), cost, weight);
+	openClosedList.AddOpenNode(newState, env->GetStateHash(newState), cost, theHeuristic->HCost(newState, goal),fcost);
 }
 
 /**

@@ -18,6 +18,7 @@
 #include "LexPermutationPDB.h"
 #include "MR1PermutationPDB.h"
 #include "NonlinearWeightedAStar.h"
+#include "MyOptimisticSearch.h"
 
 typedef MR1PermutationPDB<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>> STPPDB;
 void MakePDBs(MNPuzzleState<4, 4> g, Heuristic<MNPuzzleState<4, 4>> &h, MNPuzzle<4,4> &mnp)
@@ -50,7 +51,7 @@ void MakePDBs(MNPuzzleState<4, 4> g, Heuristic<MNPuzzleState<4, 4>> &h, MNPuzzle
 //	h.heuristics.push_back(pdb4);
 }
 
-void TestSTP(int algorithm, int weightType,int low, int high,int reopen)
+void TestSTP1(int algorithm, int weightType,int low, int high,int reopen)
 {
 	NBS<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4,4>> nbs;
 	MM<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4,4>> mm;
@@ -198,6 +199,99 @@ void TestSTP(int algorithm, int weightType,int low, int high,int reopen)
 	}
 	exit(0);
 }
+
+
+void TestSTP(int algorithm, int weightType, int low, int high, double wt)
+{
+	TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>> astar;
+	//TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>, AStarOpenClosed<MNPuzzleState<4, 4>, QuadraticCompare1<MNPuzzleState<4, 4>>>, QuadraticCompare1<MNPuzzleState<4, 4>>> gf;
+	//TemplateAStar<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>, AStarOpenClosed<MNPuzzleState<4, 4>, QuadraticCompare2<MNPuzzleState<4, 4>>>, QuadraticCompare2<MNPuzzleState<4, 4>>> gf2;
+	MyOptimisticSearch<MNPuzzleState<4, 4>, slideDir, MNPuzzle<4, 4>> OS(Phi_XUP);
+
+	OS.SetWeight(2 * wt - 1.0);
+	OS.SetOptimalityBound(wt);
+	std::cout << "OS:" << OS.GetName() << "\n";
+
+	MNPuzzle<4, 4> mnp;
+
+	mnp.SetWeighted(static_cast<puzzleWeight>(weightType));
+
+	//Heuristic<MNPuzzleState<4, 4>> h_f;
+	MNPuzzleState<4, 4> start, goal;
+	//MakePDBs(goal, h_f, mnp);
+
+
+	for (int x = low; x < high; x++) // 547 to 540
+	{
+		Heuristic<MNPuzzleState<4, 4>> h_b;
+		printf("Problem %d of %d\n", x + 1, 100);
+
+		std::vector<MNPuzzleState<4, 4>> OSPath;
+		Timer t1, t2;
+
+		start = STP::GetKorfInstance(x);
+		goal.Reset();
+	
+		if (algorithm == 0 || algorithm == 10) // A*
+		{
+			goal.Reset();
+			start = STP::GetKorfInstance(x);
+
+
+			OS.SetHeuristic(&mnp);
+
+
+			for (int j = 0; j < 3; j++)
+			{
+				if (j == 0)
+					OS.SetPhi(Phi_WA);
+
+				if (j == 1)
+					OS.SetPhi(Phi_XDP);
+
+				if (phi_type == 2)
+					OS.SetPhi(Phi_XUP);
+				for (int i = 0; i < 3; i++)
+				{
+					//update cost and reopen
+					if (i == 0)
+					{
+						OS.SetEnhancement2(true);
+						OS.SetReopenStage1(true);
+
+					}
+					//update cost and no reopen
+					if (i == 1)
+					{
+						OS.SetEnhancement2(true);
+						OS.SetReopenStage1(false);
+
+					}
+					if (i == 2)
+					{
+						OS.SetEnhancement2(false);
+						OS.SetReopenStage1(false);
+					}
+					OS.InitializeSearch(me, start, goal, OSPath);
+					OS.GetPath(me, start, goal, OSPath);
+
+					std::cout << "i,j" << i << j << "\n";
+					std::cout << "nodes:" << i << "\t"
+						<< OS.GetNodesExpanded() << "\t"
+						<< OS.GetUniqueNodesExpanded() << "\t"
+						<< OS.GetMaxFCost() << "\t"
+						<< OS.GetFirstSolutionCost() << "\t"
+						<< me->GetPathLength(OSPath) << "\t"
+						<< "\n";
+				}
+
+			}
+		}
+	
+	}
+	exit(0);
+}
+
 
 void TestSTPFull()
 {
