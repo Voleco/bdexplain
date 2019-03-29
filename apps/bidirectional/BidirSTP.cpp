@@ -253,6 +253,7 @@ void TestSTP(int algorithm, int weightType, int low, int high, double wt)
 					OS.SetPhi(Phi_XUP);
 				for (int i = 0; i < 3; i++)
 				{
+					OS.SetReopenStage2(false);
 					//update cost and reopen
 					if (i == 0)
 					{
@@ -276,7 +277,7 @@ void TestSTP(int algorithm, int weightType, int low, int high, double wt)
 					OS.GetPath(&mnp, start, goal, OSPath);
 
 					std::cout << "i,j" << i << j << "\n";
-					std::cout << "nodes:" << i << "\t"
+					std::cout << "nodes:" << "\t"
 						<< OS.GetNodesExpanded() << "\t"
 						<< OS.GetUniqueNodesExpanded() << "\t"
 						<< OS.GetMaxFCost() << "\t"

@@ -30,6 +30,7 @@ public:
 		Phi_function = phi;
 		ResetNodeCount(); env = 0; weight = 3; bound = 1.5; theHeuristic = 0;
 		reopen_stage1 = false;
+		reopen_stage2 = false;
 	}
 	virtual ~MyOptimisticSearch() {}
 	void GetPath(environment *env, const state& from, const state& to, std::vector<state> &thePath);
@@ -119,6 +120,7 @@ public:
 	void SetEnhancement2(bool en) { enhance2 = en; }
 
 	void SetReopenStage1(bool re) { reopen_stage1 = re; }
+	void SetReopenStage2(bool re) { reopen_stage2 = re; }
 
 private:
 	uint64_t nodesTouched, nodesExpanded;
@@ -142,6 +144,7 @@ private:
 	bool enhance1;
 	bool enhance2;
 	bool reopen_stage1;
+	bool reopen_stage2;
 };
 
 //static const bool verbose = false;
@@ -293,7 +296,7 @@ bool MyOptimisticSearch<state, action, environment, openList>::DoSingleSearchSte
 	}
 
 	// proven within bound
-	if (enhance1)
+	if (enhance1==true)
 		maxFCost = std::max(maxFCost, f.Lookat(f.Peek()).g + f.Lookat(f.Peek()).h);
 	else
 		maxFCost =  f.Lookat(f.Peek()).g + f.Lookat(f.Peek()).h;
@@ -348,7 +351,7 @@ bool MyOptimisticSearch<state, action, environment, openList>::DoSingleSearchSte
 	}
 	else {
 		nodeOnF = f.Close();
-		reopen = true;
+		reopen = reopen_stage2;
 		dataLocation d = fhat.Lookup(env->GetStateHash(f.Lookup(nodeOnF).data), nodeOnFHat);
 		assert(d != kNotFound);
 		if (d == kOpenList)
@@ -380,6 +383,9 @@ bool MyOptimisticSearch<state, action, environment, openList>::DoSingleSearchSte
 		ExtractPathToStartFromID(nodeOnFHat, thePath);
 		bestSolution = env->GetPathLength(thePath);
 		thePath.resize(0);
+		//cout << "maxF: " << maxFCost << "\n";
+		//cout<<"solution cost: "<< fhat.Lookup(goalID).g <<"\n";
+		//cout << "path cost: " << bestSolution << "\n";
 		//printf("Best solution %1.2f\n", bestSolution);
 		//printf("Best on open %1.2f - lower bound is %1.2f\n", f.Lookat(f.Peek()).g + f.Lookat(f.Peek()).h,
 		//	(f.Lookat(f.Peek()).g + f.Lookat(f.Peek()).h)*bound);
@@ -418,6 +424,7 @@ bool MyOptimisticSearch<state, action, environment, openList>::DoSingleSearchSte
 		{
 			//assert(d_fhat == kOpenList);
 
+
 			if (fless(f.Lookup(nodeOnF).g + edgeCost, f.Lookup(childID_f).g))
 			{
 				// update in open
@@ -429,10 +436,14 @@ bool MyOptimisticSearch<state, action, environment, openList>::DoSingleSearchSte
 
 				// update in open_hat
 				fhat.Lookup(childID_fhat).parentID = nodeOnFHat;
+
 				if (enhance2 && fhat.Lookup(childID_fhat).onSolutionPath == true)
 				{
 					double oldG = fhat.Lookup(goalID).g;
 					double newG = oldG - fhat.Lookup(childID_fhat).g + f.Lookup(nodeOnF).g + edgeCost;
+
+					bestSolution = bestSolution - fhat.Lookup(childID_fhat).g + f.Lookup(nodeOnF).g + edgeCost;
+
 					fhat.Lookup(goalID).g = newG;
 					fhat.Lookup(goalID).f = Phi_function(0, newG, weight);
 				}
@@ -450,26 +461,29 @@ bool MyOptimisticSearch<state, action, environment, openList>::DoSingleSearchSte
 		{
 			assert(d_fhat == kClosedList);
 
-			if (fless(f.Lookup(nodeOnF).g + edgeCost, f.Lookup(childID_f).g) && reopen)
+			if (fless(f.Lookup(nodeOnF).g + edgeCost, f.Lookup(childID_f).g))
 			{
 				f.Lookup(childID_f).parentID = nodeOnF;
 				f.Lookup(childID_f).g = f.Lookup(nodeOnF).g + edgeCost;
 				f.Lookup(childID_f).f = f.Lookup(childID_f).g + f.Lookup(childID_f).h;
-				f.Reopen(childID_f);
 				f.Lookup(childID_f).data = neighbors[x];
+				if(reopen)
+					f.Reopen(childID_f);
 
 				fhat.Lookup(childID_fhat).parentID = nodeOnFHat;
 				if (enhance2 && fhat.Lookup(childID_fhat).onSolutionPath == true)
 				{
 					double oldG = fhat.Lookup(goalID).g;
 					double newG = oldG - fhat.Lookup(childID_fhat).g + f.Lookup(nodeOnF).g + edgeCost;
+					bestSolution = bestSolution - fhat.Lookup(childID_fhat).g + f.Lookup(nodeOnF).g + edgeCost;
 					fhat.Lookup(goalID).g = newG;
 					fhat.Lookup(goalID).f = Phi_function(0, newG, weight);
 				}
 				fhat.Lookup(childID_fhat).g = fhat.Lookup(nodeOnFHat).g + edgeCost;
 				fhat.Lookup(childID_fhat).f = Phi_function(fhat.Lookup(childID_fhat).h, fhat.Lookup(childID_fhat).g, weight);
 				fhat.Lookup(childID_fhat).data = neighbors[x];
-				fhat.Reopen(childID_fhat);
+				if (reopen)
+					fhat.Reopen(childID_fhat);
 			}
 		}
 		else {
@@ -523,12 +537,15 @@ template <class state, class action, class environment, class openList>
 void MyOptimisticSearch<state, action, environment, openList>::ExtractPathToStartFromID(uint64_t node,
 	std::vector<state> &thePath)
 {
+	//cout << "nodeids: ";
 	do {
+		//cout << node << " ";
 		thePath.push_back(fhat.Lookup(node).data);
 		fhat.Lookup(node).onSolutionPath = true;
 		node = fhat.Lookup(node).parentID;
 	} while (fhat.Lookup(node).parentID != node);
 	thePath.push_back(fhat.Lookup(node).data);
+	//cout << node << "\n";
 }
 
 template <class state, class action, class environment, class openList>

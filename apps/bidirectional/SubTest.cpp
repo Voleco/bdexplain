@@ -211,7 +211,7 @@ void TestSub1(const char *scenario, double wt, int phi_type, int reopen)
 			if (j == 1)
 				OS.SetPhi(Phi_XDP);
 
-			if (phi_type == 2)
+			if (j == 2)
 				OS.SetPhi(Phi_XUP);
 			for (int i = 0; i < 3; i++)
 			{
@@ -238,7 +238,7 @@ void TestSub1(const char *scenario, double wt, int phi_type, int reopen)
 				OS.GetPath(me, start, goal, OSPath);
 
 				std::cout << "i,j" << i << j << "\n";
-				std::cout << "nodes:" << i << "\t"
+				std::cout << "nodes:" << "\t"
 					<< OS.GetNodesExpanded() << "\t"
 					<< OS.GetUniqueNodesExpanded() << "\t"
 					<< OS.GetMaxFCost() << "\t"
