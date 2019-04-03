@@ -254,6 +254,8 @@ void TestSTP(int algorithm, int weightType, int low, int high, double wt)
 				for (int i = 0; i < 3; i++)
 				{
 					OS.SetReopenStage2(false);
+					OS.SetEnhancement1(true);
+					//OS.SetEnhancement3(true);
 					//update cost and reopen
 					if (i == 0)
 					{

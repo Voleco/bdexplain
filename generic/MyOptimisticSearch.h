@@ -29,6 +29,9 @@ public:
 	MyOptimisticSearch(PhiFunc phi = Phi_WA) {
 		Phi_function = phi;
 		ResetNodeCount(); env = 0; weight = 3; bound = 1.5; theHeuristic = 0;
+		enhance3 = false;
+		enhance2 = false;
+		enhance1 = false;
 		reopen_stage1 = false;
 		reopen_stage2 = false;
 	}
@@ -119,6 +122,9 @@ public:
 	//enhancement 2: update the g and f cost of goal when find a shorter path to a state on solution path
 	void SetEnhancement2(bool en) { enhance2 = en; }
 
+	//enhancement 3: choose only to do open when have a solution
+	void SetEnhancement3(bool en) { enhance3 = en; }
+
 	void SetReopenStage1(bool re) { reopen_stage1 = re; }
 	void SetReopenStage2(bool re) { reopen_stage2 = re; }
 
@@ -143,6 +149,7 @@ private:
 	PhiFunc Phi_function;
 	bool enhance1;
 	bool enhance2;
+	bool enhance3;
 	bool reopen_stage1;
 	bool reopen_stage2;
 };
@@ -336,7 +343,12 @@ bool MyOptimisticSearch<state, action, environment, openList>::DoSingleSearchSte
 	double goalFCost = DBL_MAX;
 	if (goalID != 0)
 		goalFCost = fhat.Lookat(goalID).f;
-	if (fless(fhat.Lookat(fhat.Peek()).g + fhat.Lookat(fhat.Peek()).h, goalFCost))
+	bool condition = true;
+	if (enhance3 == false)
+		condition = fless(fhat.Lookat(fhat.Peek()).g + fhat.Lookat(fhat.Peek()).h, goalFCost);
+	else
+		condition = (bestSolution == DBL_MAX);
+	if (condition)
 	{
 		nodeOnFHat = fhat.Close();
 		if (nodesExpanded == 0)
