@@ -321,7 +321,7 @@ int MyCLHandler(char *argument[], int maxNumArgs)
 	{
 		int alg = 0;
 		if (maxNumArgs > 1)
-			alg = atoi(argument[1]);
+			alg = atof(argument[1]);
 		TestPancake(alg);
 		return 1;
 	}
