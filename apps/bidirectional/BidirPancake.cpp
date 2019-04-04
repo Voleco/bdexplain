@@ -18,6 +18,7 @@
 #include "HeuristicError.h"
 #include "HeavyPancakePuzzle.h"
 #include "NonlinearWeightedAStar.h"
+#include "MyOptimisticSearch.h"
 
 const int S = 10; // must be factor of sizes below
 
@@ -28,6 +29,7 @@ void TestRob();
 void TestVariants();
 void TestError();
 void TestPancakeHeavy(int alg);
+void TestPancakeHeavy2(double wt);
 
 template <class state>
 class GAPIncludeKHeuristic : public Heuristic<state> {
@@ -39,9 +41,9 @@ public:
 	Heuristic<state> *h2;
 };
 
-void TestPancake(int alg)
+void TestPancake(double wt)
 {
-	TestPancakeHeavy(alg);
+	TestPancakeHeavy2(wt);
 //	TestRob();
 //	TestPancakeRandom();
 
@@ -74,6 +76,8 @@ void TestPancakeHeavy(int alg)
 			srandom(random());
 
 			goal.Reset();
+			printf("Goal %d of %d\n", count + 1, 50);
+			std::cout << goal << "\n";
 			original.Reset();
 			for (int x = 0; x < N; x++)
 				std::swap(original.puzzle[x], original.puzzle[x + random() % (N - x)]);
@@ -126,6 +130,106 @@ void TestPancakeHeavy(int alg)
 		}
 	}
 }
+
+
+void TestPancakeHeavy2(double wt)
+{
+
+	srandom(201902);
+	PancakePuzzleState<N> start;
+	PancakePuzzleState<N> original;
+	PancakePuzzleState<N> goal;
+	HeavyPancakePuzzle<N> pancake(2, 0);
+
+	std::vector<PancakePuzzleState<N>> OSPath;
+	
+	MyOptimisticSearch<PancakePuzzleState<N>, PancakePuzzleAction, HeavyPancakePuzzle<N>> OS(Phi_XUP);
+
+	OS.SetWeight(2 * wt - 1.0);
+	OS.SetOptimalityBound(wt);
+	std::cout << "OS:" << OS.GetName() << "\n";
+
+
+	for (int count = 0; count < 50; count++)
+	{
+		srandom(random());
+
+		goal.Reset();
+
+		original.Reset();
+		for (int x = 0; x < N; x++)
+			std::swap(original.puzzle[x], original.puzzle[x + random() % (N - x)]);
+
+		printf("Problem %d of %d\n", count + 1, 50);
+		std::cout << original << "\n";
+
+		Timer t1, t2;
+
+
+		if (1)
+		{
+			goal.Reset();
+			start = original;
+
+
+			OS.SetHeuristic(&pancake);
+
+
+			for (int j = 0; j < 3; j++)
+			{
+				if (j == 0)
+					OS.SetPhi(Phi_WA);
+
+				if (j == 1)
+					OS.SetPhi(Phi_XDP);
+
+				if (j == 2)
+					OS.SetPhi(Phi_XUP);
+				for (int i = 0; i < 3; i++)
+				{
+					OS.SetReopenStage2(false);
+					OS.SetEnhancement1(true);
+					OS.SetEnhancement3(true);
+					//update cost and reopen
+					if (i == 0)
+					{
+						OS.SetEnhancement2(true);
+						OS.SetReopenStage1(true);
+
+					}
+					//update cost and no reopen
+					if (i == 1)
+					{
+						OS.SetEnhancement2(true);
+						OS.SetReopenStage1(false);
+
+					}
+					if (i == 2)
+					{
+						OS.SetEnhancement2(false);
+						OS.SetReopenStage1(false);
+					}
+					OS.InitializeSearch(&pancake, start, goal, OSPath);
+					OS.GetPath(&pancake, start, goal, OSPath);
+
+					std::cout << "i,j" << i << j << "\n";
+					std::cout << "nodes:" << "\t"
+						<< OS.GetNodesExpanded() << "\t"
+						<< OS.GetUniqueNodesExpanded() << "\t"
+						<< OS.GetMaxFCost() << "\t"
+						<< OS.GetFirstSolutionCost() << "\t"
+						<< pancake.GetPathLength(OSPath) << "\t"
+						<< "\n";
+				}
+
+			}
+		}
+
+	}
+	exit(0);
+}
+
+
 
 void TestRob()
 {

@@ -11,6 +11,6 @@
 
 #include <stdio.h>
 
-void TestPancake(int alg);
+void TestPancake(double wt);
 
 #endif /* BidirPancake_hpp */
